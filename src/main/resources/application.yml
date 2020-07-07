@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/camel_poc
+
+rtt:
+  trigger:
+    chunk-size: 10
+
+scheduler-routes:
+  collector:
+    id: CollectorSchedulerRoute
+    cron-expression: 0/20 * * ? * * *
+    thread-pool: 10
+
+  trigger:
+    id: TriggerSchedulerRoute
+    cron-expression: 0/10 * * ? * * *
+    thread-pool: 10
+
+  bothub-trigger:
+    thread-pool: 10
+
+  bothub-collector:
+    thread-pool: 10
