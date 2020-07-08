@@ -4,15 +4,11 @@ import com.rtt.collector.collectorpoc.annotation.Route;
 import com.rtt.collector.collectorpoc.bot.usecase.ValidateBotUseCase;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
 import org.apache.camel.builder.RouteBuilder;
-import org.springframework.beans.factory.annotation.Value;
 
 import static com.rtt.collector.collectorpoc.camel.utils.Constants.KEY_RTTOOL_CAMPAIGN_ID;
 
 @Route
 public class LaunchCampaignsRoute extends RouteBuilder {
-
-    @Value("${scheduler-routes.trigger.thread-pool}")
-    private int threadPool;
 
     private final ValidateBotUseCase validateBotUseCase;
 
@@ -22,7 +18,7 @@ public class LaunchCampaignsRoute extends RouteBuilder {
 
     @Override
     public void configure() {
-        from(String.format("seda:launchCampaigns?concurrentConsumers=%d", threadPool))
+        from("seda:launchCampaigns?concurrentConsumers={{scheduler-routes.trigger.thread-pool}}")
                 .process(exchange -> {
                     RTToolCampaign rtToolCampaign = exchange.getIn().getBody(RTToolCampaign.class);
                     long campaignId = rtToolCampaign.getId();

@@ -4,13 +4,9 @@ import com.rtt.collector.collectorpoc.annotation.Route;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.GetCampaignsByStatusUseCase;
 import org.apache.camel.builder.RouteBuilder;
-import org.springframework.beans.factory.annotation.Value;
 
 @Route
 public class CollectSchedulerRoute extends RouteBuilder {
-
-    @Value("${scheduler-routes.collector.cron-expression}")
-    private String cronExpression;
 
     private final GetCampaignsByStatusUseCase getCampaignsByStatusUseCase;
 
@@ -20,7 +16,7 @@ public class CollectSchedulerRoute extends RouteBuilder {
 
     @Override
     public void configure() {
-        from(String.format("quartz://CollectorSchedulerRoute?cron=%s", cronExpression))
+        from("quartz://CollectorSchedulerRoute?cron={{scheduler-routes.collector.cron-expression}}")
                 .log("Route CollectorSchedulerRoute: starting new cycle")
                 .process(exchange -> exchange.getIn().setBody(getCampaignsByStatusUseCase.execute(
                         GetCampaignsByStatusUseCase.Parameters.build(RTToolCampaign.Status.ACTIVE)
