@@ -9,7 +9,7 @@ public interface RTToolCampaignService {
 
     List<RTToolCampaign> getAllCampaignsByStatus(RTToolCampaign.Status status);
 
-    void updateCampaignStatus(long campaignId, RTToolCampaign.Status status);
+    RTToolCampaign updateCampaignStatus(long campaignId, RTToolCampaign.Status status);
 
     List<BotHubCampaign> chunkCampaign(long campaignId, int chunkSize);
 

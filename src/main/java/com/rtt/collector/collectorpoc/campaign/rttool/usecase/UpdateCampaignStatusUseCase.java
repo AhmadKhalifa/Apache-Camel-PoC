@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @UseCase
 public class UpdateCampaignStatusUseCase
-        extends BaseUseCase<Void, UpdateCampaignStatusUseCase.Parameters> {
+        extends BaseUseCase<RTToolCampaign, UpdateCampaignStatusUseCase.Parameters> {
 
     private final RTToolCampaignService rtToolCampaignService;
 
@@ -17,9 +17,8 @@ public class UpdateCampaignStatusUseCase
     }
 
     @Override
-    public Void execute(Parameters parameters) {
-        rtToolCampaignService.updateCampaignStatus(parameters.campaignId, parameters.status);
-        return null;
+    public RTToolCampaign execute(Parameters parameters) {
+        return rtToolCampaignService.updateCampaignStatus(parameters.campaignId, parameters.status);
     }
 
     @Setter

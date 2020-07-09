@@ -8,22 +8,26 @@ import org.apache.camel.builder.RouteBuilder;
 import static com.rtt.collector.collectorpoc.camel.utils.Constants.KEY_RTTOOL_CAMPAIGN_ID;
 
 @Route
-public class MarkCampaignAsErrorRoute extends RouteBuilder {
+public class MarkCampaignAsBotErrorRoute extends RouteBuilder {
 
     private final UpdateCampaignStatusUseCase updateCampaignStatusUseCase;
 
-    public MarkCampaignAsErrorRoute(UpdateCampaignStatusUseCase updateCampaignStatusUseCase) {
+    public MarkCampaignAsBotErrorRoute(UpdateCampaignStatusUseCase updateCampaignStatusUseCase) {
         this.updateCampaignStatusUseCase = updateCampaignStatusUseCase;
     }
 
     @Override
     public void configure() {
         from("direct:markCampaignAsBotError")
-                .process(exchange -> updateCampaignStatusUseCase.execute(
+                .process(exchange -> exchange.getIn().setBody(updateCampaignStatusUseCase.execute(
                         UpdateCampaignStatusUseCase.Parameters.build(
                                 (long) exchange.getIn().getHeader(KEY_RTTOOL_CAMPAIGN_ID),
                                 RTToolCampaign.Status.BOT_ERROR
                         )
-                ));
+                )))
+                .to("direct:notifyCampaignMarkedAsBotError");
+
+        from("direct:notifyCampaignMarkedAsBotError")
+                .log("{body}");
     }
 }

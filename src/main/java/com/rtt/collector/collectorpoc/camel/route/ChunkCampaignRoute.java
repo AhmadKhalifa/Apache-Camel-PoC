@@ -25,14 +25,14 @@ public class ChunkCampaignRoute extends RouteBuilder {
     @Override
     public void configure() {
         from("direct:chunkCampaign")
-                .process(exchange -> updateCampaignStatusUseCase.execute(
+                .process(exchange -> exchange.getIn().setBody(updateCampaignStatusUseCase.execute(
                         UpdateCampaignStatusUseCase.Parameters.build(
                                 (long) exchange.getIn().getHeader(KEY_RTTOOL_CAMPAIGN_ID),
                                 RTToolCampaign.Status.ACTIVE
                         )
-                ))
+                )))
                 .process(exchange -> exchange.getIn().setBody(chunkCampaignUseCase.execute(
-                        ChunkCampaignUseCase.Parameters.build((long) exchange.getIn().getHeader(KEY_RTTOOL_CAMPAIGN_ID))
+                        ChunkCampaignUseCase.Parameters.build(exchange.getIn().getBody(RTToolCampaign.class).getId())
                 )))
                 .split(body())
                 .to("seda:triggerCampaign");

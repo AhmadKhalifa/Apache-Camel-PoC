@@ -17,10 +17,14 @@ public class CollectBotHubCampaignRoute extends RouteBuilder {
     @Override
     public void configure() {
         from("seda:collectBotHubCampaign?concurrentConsumers={{scheduler-routes.bothub-collector.thread-pool}}")
-                .process(exchange -> collectBotHubCampaignResultsUseCase.execute(
+                .process(exchange -> exchange.getIn().setBody(collectBotHubCampaignResultsUseCase.execute(
                         CollectBotHubCampaignResultsUseCase.Parameters.build(
                                 exchange.getIn().getBody(BotHubCampaign.class).getId()
                         )
-                ));
+                )))
+                .to("direct:notifyBotHubCampaignCollected");
+
+        from("direct:notifyBotHubCampaignCollected")
+                .log("{body}");
     }
 }

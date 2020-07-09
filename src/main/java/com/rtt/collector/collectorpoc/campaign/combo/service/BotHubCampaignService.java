@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface BotHubCampaignService {
 
-    void triggerCampaign(BotHubCampaign botHubCampaign);
+    BotHubCampaign triggerCampaign(BotHubCampaign botHubCampaign);
 
     BotHubCampaign collectCampaignResults(long botHubCampaignId);
 

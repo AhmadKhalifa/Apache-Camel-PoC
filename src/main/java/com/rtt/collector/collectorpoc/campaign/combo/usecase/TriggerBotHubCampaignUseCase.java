@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @UseCase
 public class TriggerBotHubCampaignUseCase
-        extends BaseUseCase<Void, TriggerBotHubCampaignUseCase.Parameters> {
+        extends BaseUseCase<BotHubCampaign, TriggerBotHubCampaignUseCase.Parameters> {
 
     private final BotHubCampaignService botHubCampaignService;
 
@@ -17,9 +17,8 @@ public class TriggerBotHubCampaignUseCase
     }
 
     @Override
-    public Void execute(Parameters parameters) {
-        botHubCampaignService.triggerCampaign(parameters.botHubCampaign);
-        return null;
+    public BotHubCampaign execute(Parameters parameters) {
+        return botHubCampaignService.triggerCampaign(parameters.botHubCampaign);
     }
 
     @Setter

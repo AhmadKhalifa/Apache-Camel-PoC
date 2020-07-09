@@ -17,8 +17,12 @@ public class TriggerBotHubCampaignRoute extends RouteBuilder {
     @Override
     public void configure() {
         from("seda:triggerCampaign?concurrentConsumers={{scheduler-routes.bothub-trigger.thread-pool}}")
-                .process(exchange -> triggerBotHubCampaignUseCase.execute(TriggerBotHubCampaignUseCase.Parameters.build(
-                        exchange.getIn().getBody(BotHubCampaign.class)
-                )));
+                .process(exchange -> exchange.getIn().setBody(triggerBotHubCampaignUseCase.execute(
+                        TriggerBotHubCampaignUseCase.Parameters.build(exchange.getIn().getBody(BotHubCampaign.class))
+                )))
+                .to("direct:notifyBotHubCampaignTriggered");
+
+        from("direct:notifyBotHubCampaignTriggered")
+                .log("{body}");
     }
 }

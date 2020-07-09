@@ -39,7 +39,7 @@ public class ComboCampaignService extends BaseService implements BotHubCampaignS
     }
 
     @Override
-    public void triggerCampaign(BotHubCampaign botHubCampaign) {
+    public BotHubCampaign triggerCampaign(BotHubCampaign botHubCampaign) {
         log.info(
                 "{}- Triggering bot hub campaign #{}, Details: {}",
                 Thread.currentThread().getName(),
@@ -59,12 +59,13 @@ public class ComboCampaignService extends BaseService implements BotHubCampaignS
                     botHubCampaignId
             );
             botHubCampaignEntity.setBotHubId(botHubCampaignId);
-            botHubCampaignRepository.save(botHubCampaignEntity);
+            botHubCampaignEntity = botHubCampaignRepository.save(botHubCampaignEntity);
             log.info(
                     "{}- Bot hub campaign #{} was updated successfully in database",
                     Thread.currentThread().getName(),
                     botHubCampaign.getId()
             );
+            return botHubCampaignMapper.toDto(botHubCampaignEntity);
         } else {
             throw new RuntimeException(String.format("Bot hub campaign #%d not found", botHubCampaign.getId()));
         }

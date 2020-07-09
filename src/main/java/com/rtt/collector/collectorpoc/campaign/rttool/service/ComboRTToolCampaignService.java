@@ -72,19 +72,20 @@ public class ComboRTToolCampaignService extends BaseService implements RTToolCam
     }
 
     @Override
-    public void updateCampaignStatus(long campaignId, RTToolCampaign.Status status) {
+    public RTToolCampaign updateCampaignStatus(long campaignId, RTToolCampaign.Status status) {
         log.info("{}- Requesting RTTool campaign #{} ...", Thread.currentThread().getName(), campaignId);
         Optional<RTToolCampaignEntity> rtToolCampaignOptional = rtToolCampaignRepository.findById(campaignId);
         if (rtToolCampaignOptional.isPresent()) {
             RTToolCampaignEntity rtToolCampaignEntity = rtToolCampaignOptional.get();
             rtToolCampaignEntity.setStatus(status.ordinal());
-            rtToolCampaignRepository.save(rtToolCampaignEntity);
+            rtToolCampaignEntity = rtToolCampaignRepository.save(rtToolCampaignEntity);
             log.info(
                     "{}- Updated RTTool campaign #{} status to {}",
                     Thread.currentThread().getName(),
                     campaignId,
                     status
             );
+            return rtToolCampaignMapper.toDto(rtToolCampaignEntity);
         } else {
             throw new RuntimeException(String.format("RTTool campaign #%d not found", campaignId));
         }
