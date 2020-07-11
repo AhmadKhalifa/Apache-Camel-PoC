@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <bot
+            id="1"
+            name="CAN Bot"
+            bot_id="ABC-DEF-GHI"
+            is_activated="1"
+            error="0"
+    />
+    <campaign
+            id="1"
+            bot_id="1"
+            name="Campaign 1"
+            status="0"
+    />
+    <msisdn
+            id="1"
+            campaign_id="1"
+            number="20122534600"
+    />
+    <msisdn
+            id="2"
+            campaign_id="1"
+            number="20122534610"
+    />
+    <msisdn
+            id="3"
+            campaign_id="1"
+            number="20122534620"
+    />
+    <msisdn
+            id="4"
+            campaign_id="1"
+            number="20122534630"
+    />
+    <msisdn
+            id="5"
+            campaign_id="1"
+            number="20122534640"
+    />
+    <msisdn
+            id="6"
+            campaign_id="1"
+            number="20122534650"
+    />
+    <msisdn
+            id="7"
+            campaign_id="1"
+            number="20122534660"
+    />
+    <msisdn
+            id="8"
+            campaign_id="1"
+            number="20122534670"
+    />
+    <msisdn
+            id="9"
+            campaign_id="1"
+            number="20122534680"
+    />
+    <msisdn
+            id="10"
+            campaign_id="1"
+            number="20122534690"
+    />
+</dataset>
