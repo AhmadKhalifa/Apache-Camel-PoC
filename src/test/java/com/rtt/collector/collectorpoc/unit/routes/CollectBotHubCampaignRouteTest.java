@@ -2,7 +2,6 @@ package com.rtt.collector.collectorpoc.unit.routes;
 
 import com.rtt.collector.collectorpoc.camel.route.CollectBotHubCampaignRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
-import com.rtt.collector.collectorpoc.campaign.combo.service.BotHubCampaignService;
 import com.rtt.collector.collectorpoc.campaign.combo.usecase.CollectBotHubCampaignResultsUseCase;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
@@ -23,7 +22,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Properties;
 import java.util.Random;
 
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -39,10 +38,10 @@ public class CollectBotHubCampaignRouteTest extends CamelTestSupport {
     protected ProducerTemplate collectBotHubCampaignEndpoint;
 
     @InjectMocks
-    private CollectBotHubCampaignResultsUseCase collectBotHubCampaignResultsUseCase;
+    private CollectBotHubCampaignRoute collectBotHubCampaignRoute;
 
     @Mock
-    private BotHubCampaignService botHubCampaignService;
+    private CollectBotHubCampaignResultsUseCase collectBotHubCampaignResultsUseCase;
 
     @Override
     protected Properties useOverridePropertiesWithPropertiesComponent() {
@@ -53,7 +52,7 @@ public class CollectBotHubCampaignRouteTest extends CamelTestSupport {
 
     @Override
     protected RoutesBuilder createRouteBuilder() {
-        return new CollectBotHubCampaignRoute(collectBotHubCampaignResultsUseCase);
+        return collectBotHubCampaignRoute;
     }
 
     @BeforeEach
@@ -76,7 +75,7 @@ public class CollectBotHubCampaignRouteTest extends CamelTestSupport {
         }};
 
         // When
-        when(botHubCampaignService.collectCampaignResults(anyLong())).thenReturn(botHubCampaign);
+        when(collectBotHubCampaignResultsUseCase.execute(any())).thenReturn(botHubCampaign);
         collectBotHubCampaignEndpoint.sendBody(botHubCampaign);
 
         // Then

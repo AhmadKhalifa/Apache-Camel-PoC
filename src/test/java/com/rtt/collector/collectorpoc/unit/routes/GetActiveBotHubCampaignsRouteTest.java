@@ -2,7 +2,6 @@ package com.rtt.collector.collectorpoc.unit.routes;
 
 import com.rtt.collector.collectorpoc.camel.route.GetActiveBotHubCampaignsRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
-import com.rtt.collector.collectorpoc.campaign.combo.service.BotHubCampaignService;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.GetActiveBotHubCampaignsUseCase;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
@@ -37,14 +36,14 @@ public class GetActiveBotHubCampaignsRouteTest extends CamelTestSupport {
     protected ProducerTemplate getActiveBotHubCampaignsEndpoint;
 
     @InjectMocks
-    private GetActiveBotHubCampaignsUseCase getActiveBotHubCampaignsUseCase;
+    private GetActiveBotHubCampaignsRoute getActiveBotHubCampaignsRoute;
 
     @Mock
-    private BotHubCampaignService botHubCampaignService;
+    private GetActiveBotHubCampaignsUseCase getActiveBotHubCampaignsUseCase;
 
     @Override
     protected RoutesBuilder createRouteBuilder() {
-        return new GetActiveBotHubCampaignsRoute(getActiveBotHubCampaignsUseCase);
+        return getActiveBotHubCampaignsRoute;
     }
 
     @Test
@@ -60,7 +59,7 @@ public class GetActiveBotHubCampaignsRouteTest extends CamelTestSupport {
         }};
 
         // When
-        when(botHubCampaignService.getActiveBotHubCampaigns(anyLong())).thenReturn(chunkedBotHubCampaigns);
+        when(getActiveBotHubCampaignsUseCase.execute(any())).thenReturn(chunkedBotHubCampaigns);
         getActiveBotHubCampaignsEndpoint.sendBodyAndHeader(true, KEY_RTTOOL_CAMPAIGN_ID, campaignId);
 
         // Then

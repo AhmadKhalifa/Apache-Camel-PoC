@@ -3,7 +3,6 @@ package com.rtt.collector.collectorpoc.unit.routes;
 import com.rtt.collector.collectorpoc.camel.route.GetCampaignsByStatusRoute;
 import com.rtt.collector.collectorpoc.camel.utils.SchedulerType;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
-import com.rtt.collector.collectorpoc.campaign.rttool.service.RTToolCampaignService;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.GetCampaignsByStatusUseCase;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
@@ -41,14 +40,14 @@ public class GetCampaignByStatusRouteTest extends CamelTestSupport {
     protected ProducerTemplate getCampaignsByStatusEndpoint;
 
     @InjectMocks
-    private GetCampaignsByStatusUseCase getCampaignsByStatusUseCase;
+    private GetCampaignsByStatusRoute getCampaignsByStatusRoute;
 
     @Mock
-    private RTToolCampaignService rtToolCampaignService;
+    private GetCampaignsByStatusUseCase getCampaignsByStatusUseCase;
 
     @Override
     protected RoutesBuilder createRouteBuilder() {
-        return new GetCampaignsByStatusRoute(getCampaignsByStatusUseCase);
+        return getCampaignsByStatusRoute;
     }
 
     @Test
@@ -63,7 +62,7 @@ public class GetCampaignByStatusRouteTest extends CamelTestSupport {
         }};
 
         // When
-        when(rtToolCampaignService.getAllCampaignsByStatus(any())).thenReturn(campaigns);
+        when(getCampaignsByStatusUseCase.execute(any())).thenReturn(campaigns);
         getCampaignsByStatusEndpoint.sendBodyAndHeader(campaignStatus, KEY_SCHEDULER_TYPE, SchedulerType.TRIGGER);
 
         // Then
@@ -85,7 +84,7 @@ public class GetCampaignByStatusRouteTest extends CamelTestSupport {
         }};
 
         // When
-        when(rtToolCampaignService.getAllCampaignsByStatus(any())).thenReturn(campaigns);
+        when(getCampaignsByStatusUseCase.execute(any())).thenReturn(campaigns);
         getCampaignsByStatusEndpoint.sendBodyAndHeader(campaignStatus, KEY_SCHEDULER_TYPE, SchedulerType.COLLECTOR);
 
         // Then

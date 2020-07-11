@@ -2,7 +2,6 @@ package com.rtt.collector.collectorpoc.unit.routes;
 
 import com.rtt.collector.collectorpoc.camel.route.MarkCampaignAsBotErrorRoute;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
-import com.rtt.collector.collectorpoc.campaign.rttool.service.RTToolCampaignService;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.UpdateCampaignStatusUseCase;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
@@ -37,14 +36,14 @@ public class MarkCampaignAsBotErrorRouteTest extends CamelTestSupport {
     protected ProducerTemplate markCampaignAsBotErrorEndpoint;
 
     @InjectMocks
-    private UpdateCampaignStatusUseCase updateCampaignStatusUseCase;
+    private MarkCampaignAsBotErrorRoute markCampaignAsBotErrorRoute;
 
     @Mock
-    private RTToolCampaignService rtToolCampaignService;
+    private UpdateCampaignStatusUseCase updateCampaignStatusUseCase;
 
     @Override
     protected RoutesBuilder createRouteBuilder() {
-        return new MarkCampaignAsBotErrorRoute(updateCampaignStatusUseCase);
+        return markCampaignAsBotErrorRoute;
     }
 
     @BeforeEach
@@ -72,7 +71,7 @@ public class MarkCampaignAsBotErrorRouteTest extends CamelTestSupport {
         }};
 
         // When
-        when(rtToolCampaignService.updateCampaignStatus(anyLong(), any())).thenReturn(campaignAfterUpdate);
+        when(updateCampaignStatusUseCase.execute(any())).thenReturn(campaignAfterUpdate);
         markCampaignAsBotErrorEndpoint.sendBodyAndHeader(campaign, KEY_RTTOOL_CAMPAIGN_ID, campaignId);
 
         // Then

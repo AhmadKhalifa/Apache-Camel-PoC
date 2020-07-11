@@ -2,7 +2,6 @@ package com.rtt.collector.collectorpoc.unit.routes;
 
 import com.rtt.collector.collectorpoc.camel.route.TriggerBotHubCampaignRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
-import com.rtt.collector.collectorpoc.campaign.combo.service.BotHubCampaignService;
 import com.rtt.collector.collectorpoc.campaign.combo.usecase.TriggerBotHubCampaignUseCase;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
@@ -38,10 +37,10 @@ public class TriggerBotHubCampaignRouteTest extends CamelTestSupport {
     protected ProducerTemplate triggerBotHubCampaignEndpoint;
 
     @InjectMocks
-    private TriggerBotHubCampaignUseCase triggerBotHubCampaignUseCase;
+    private TriggerBotHubCampaignRoute triggerBotHubCampaignRoute;
 
     @Mock
-    private BotHubCampaignService botHubCampaignService;
+    private TriggerBotHubCampaignUseCase triggerBotHubCampaignUseCase;
 
     @Override
     protected Properties useOverridePropertiesWithPropertiesComponent() {
@@ -52,7 +51,7 @@ public class TriggerBotHubCampaignRouteTest extends CamelTestSupport {
 
     @Override
     protected RoutesBuilder createRouteBuilder() {
-        return new TriggerBotHubCampaignRoute(triggerBotHubCampaignUseCase);
+        return triggerBotHubCampaignRoute;
     }
 
     @BeforeEach
@@ -72,7 +71,7 @@ public class TriggerBotHubCampaignRouteTest extends CamelTestSupport {
         BotHubCampaign botHubCampaign = new BotHubCampaign();
 
         // When
-        when(botHubCampaignService.triggerCampaign(any())).thenReturn(botHubCampaign);
+        when(triggerBotHubCampaignUseCase.execute(any())).thenReturn(botHubCampaign);
         triggerBotHubCampaignEndpoint.sendBody(botHubCampaign);
 
         // Then

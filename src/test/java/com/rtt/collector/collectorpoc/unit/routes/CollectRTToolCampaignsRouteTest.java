@@ -1,7 +1,6 @@
 package com.rtt.collector.collectorpoc.unit.routes;
 
 import com.rtt.collector.collectorpoc.bot.model.Bot;
-import com.rtt.collector.collectorpoc.bot.service.BotService;
 import com.rtt.collector.collectorpoc.bot.usecase.ValidateBotUseCase;
 import com.rtt.collector.collectorpoc.camel.route.CollectRTToolCampaignsRoute;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
@@ -46,10 +45,10 @@ public class CollectRTToolCampaignsRouteTest extends CamelTestSupport {
     protected ProducerTemplate collectRTToolCampaignsEndpoint;
 
     @InjectMocks
-    private ValidateBotUseCase validateBotUseCase;
+    private CollectRTToolCampaignsRoute collectRTToolCampaignsRoute;
 
     @Mock
-    private BotService botService;
+    private ValidateBotUseCase validateBotUseCase;
 
     @Override
     protected Properties useOverridePropertiesWithPropertiesComponent() {
@@ -60,7 +59,7 @@ public class CollectRTToolCampaignsRouteTest extends CamelTestSupport {
 
     @Override
     protected RoutesBuilder createRouteBuilder() {
-        return new CollectRTToolCampaignsRoute(validateBotUseCase);
+        return collectRTToolCampaignsRoute;
     }
 
     @BeforeEach
@@ -88,7 +87,7 @@ public class CollectRTToolCampaignsRouteTest extends CamelTestSupport {
         }};
 
         // When
-        when(botService.validateBot(any())).thenReturn(true);
+        when(validateBotUseCase.execute(any())).thenReturn(true);
         collectRTToolCampaignsEndpoint.sendBody(campaign);
 
         // Then
@@ -115,7 +114,7 @@ public class CollectRTToolCampaignsRouteTest extends CamelTestSupport {
         }};
 
         // When
-        when(botService.validateBot(any())).thenReturn(false);
+        when(validateBotUseCase.execute(any())).thenReturn(false);
         collectRTToolCampaignsEndpoint.sendBody(campaign);
 
         // Then

@@ -3,7 +3,6 @@ package com.rtt.collector.collectorpoc.unit.routes;
 import com.rtt.collector.collectorpoc.camel.route.ChunkCampaignRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
-import com.rtt.collector.collectorpoc.campaign.rttool.service.RTToolCampaignService;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.ChunkCampaignUseCase;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.UpdateCampaignStatusUseCase;
 import org.apache.camel.*;
@@ -39,17 +38,17 @@ public class ChunkCampaignRouteTest extends CamelTestSupport {
     protected ProducerTemplate chunkCampaignEndpoint;
 
     @InjectMocks
-    private ChunkCampaignUseCase chunkCampaignUseCase;
-
-    @InjectMocks
-    private UpdateCampaignStatusUseCase updateCampaignStatusUseCase;
+    private ChunkCampaignRoute chunkCampaignRoute;
 
     @Mock
-    private RTToolCampaignService rtToolCampaignService;
+    private ChunkCampaignUseCase chunkCampaignUseCase;
+
+    @Mock
+    private UpdateCampaignStatusUseCase updateCampaignStatusUseCase;
 
     @Override
     protected RoutesBuilder createRouteBuilder() {
-        return new ChunkCampaignRoute(chunkCampaignUseCase, updateCampaignStatusUseCase);
+        return chunkCampaignRoute;
     }
 
     @BeforeEach
@@ -79,8 +78,8 @@ public class ChunkCampaignRouteTest extends CamelTestSupport {
         }};
 
         // When
-        when(rtToolCampaignService.updateCampaignStatus(anyLong(), any())).thenReturn(campaignAfterUpdate);
-        when(rtToolCampaignService.chunkCampaign(anyLong(), anyInt())).thenReturn(chunkedBotHubCampaigns);
+        when(updateCampaignStatusUseCase.execute(any())).thenReturn(campaignAfterUpdate);
+        when(chunkCampaignUseCase.execute(any())).thenReturn(chunkedBotHubCampaigns);
         chunkCampaignEndpoint.sendBodyAndHeader(true, KEY_RTTOOL_CAMPAIGN_ID, campaignId);
 
         // Then
