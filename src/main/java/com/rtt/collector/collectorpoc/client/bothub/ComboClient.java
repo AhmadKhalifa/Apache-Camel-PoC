@@ -11,7 +11,7 @@ import java.util.UUID;
 @Client
 public class ComboClient extends BaseHttpClient implements BotHubClient {
 
-    private final ArrayList<BotHubCampaign> triggeredCampaigns = new ArrayList<>();
+    public final ArrayList<BotHubCampaign> triggeredCampaigns = new ArrayList<>();
 
     @Override
     public boolean validateBot(String botId) {
@@ -28,6 +28,10 @@ public class ComboClient extends BaseHttpClient implements BotHubClient {
 
     @Override
     public BotHubCampaign collectBotHubCampaign(String botHubCampaignId) {
+        return getCampaignWithNewStatistics(botHubCampaignId);
+    }
+
+    public BotHubCampaign getCampaignWithNewStatistics(String botHubCampaignId) {
         BotHubCampaign botHubCampaign = triggeredCampaigns.stream()
                 .filter(campaign -> botHubCampaignId.equals(campaign.getBotHubId()))
                 .findFirst()

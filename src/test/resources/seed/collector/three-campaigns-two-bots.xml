@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <bot
+            id="1"
+            name="CAN Bot"
+            bot_id="ABC-DEF-GHI"
+            is_activated="1"
+            error="0"
+    />
+    <bot
+            id="2"
+            name="MEA Bot"
+            bot_id="XYZ-DEF-GHI"
+            is_activated="1"
+            error="0"
+    />
+
+    <campaign
+            id="1"
+            bot_id="1"
+            name="Campaign 1"
+            status="1"
+    />
+    <bot_hub_campaign
+            id="1"
+            campaign_id="1"
+            bot_hub_id="60bff553-d058-40e9-968a-b1bda6503c00"
+            sent_count="0"
+            delivered_count="0"
+            read_count="0"
+            error_count="0"
+            total_count="10"
+    />
+    <bot_hub_campaign
+            id="2"
+            campaign_id="1"
+            bot_hub_id="60bff553-d058-40e9-968a-b1bda6503c01"
+            sent_count="0"
+            delivered_count="0"
+            read_count="0"
+            error_count="0"
+            total_count="10"
+    />
+    <bot_hub_campaign
+            id="3"
+            campaign_id="1"
+            bot_hub_id="60bff553-d058-40e9-968a-b1bda6503c02"
+            sent_count="0"
+            delivered_count="0"
+            read_count="0"
+            error_count="0"
+            total_count="10"
+    />
+
+
+    <campaign
+            id="2"
+            bot_id="2"
+            name="Campaign 2"
+            status="1"
+    />
+    <bot_hub_campaign
+            id="20"
+            campaign_id="2"
+            bot_hub_id="60bff553-d058-40e9-968a-b1bda6503c10"
+            sent_count="0"
+            delivered_count="0"
+            read_count="0"
+            error_count="0"
+            total_count="10"
+    />
+    <bot_hub_campaign
+            id="21"
+            campaign_id="2"
+            bot_hub_id="60bff553-d058-40e9-968a-b1bda6503c11"
+            sent_count="0"
+            delivered_count="0"
+            read_count="0"
+            error_count="0"
+            total_count="10"
+    />
+    <bot_hub_campaign
+            id="22"
+            campaign_id="2"
+            bot_hub_id="60bff553-d058-40e9-968a-b1bda6503c12"
+            sent_count="0"
+            delivered_count="0"
+            read_count="0"
+            error_count="0"
+            total_count="10"
+    />
+
+
+    <campaign
+            id="3"
+            bot_id="1"
+            name="Campaign 3"
+            status="1"
+    />
+    <bot_hub_campaign
+            id="30"
+            campaign_id="3"
+            bot_hub_id="60bff553-d058-40e9-968a-b1bda6503c20"
+            sent_count="0"
+            delivered_count="0"
+            read_count="0"
+            error_count="0"
+            total_count="10"
+    />
+    <bot_hub_campaign
+            id="31"
+            campaign_id="3"
+            bot_hub_id="60bff553-d058-40e9-968a-b1bda6503c21"
+            sent_count="0"
+            delivered_count="0"
+            read_count="0"
+            error_count="0"
+            total_count="10"
+    />
+    <bot_hub_campaign
+            id="32"
+            campaign_id="3"
+            bot_hub_id="60bff553-d058-40e9-968a-b1bda6503c22"
+            sent_count="0"
+            delivered_count="0"
+            read_count="0"
+            error_count="0"
+            total_count="10"
+    />
+</dataset>
