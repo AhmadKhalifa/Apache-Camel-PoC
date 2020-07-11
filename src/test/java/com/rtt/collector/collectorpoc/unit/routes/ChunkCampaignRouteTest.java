@@ -1,15 +1,14 @@
-package com.rtt.collector.collectorpoc.routes;
+package com.rtt.collector.collectorpoc.unit.routes;
 
-import com.rtt.collector.collectorpoc.camel.route.MarkCampaignAsBotErrorRoute;
+import com.rtt.collector.collectorpoc.camel.route.ChunkCampaignRoute;
+import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.service.RTToolCampaignService;
+import com.rtt.collector.collectorpoc.campaign.rttool.usecase.ChunkCampaignUseCase;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.UpdateCampaignStatusUseCase;
-import org.apache.camel.EndpointInject;
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.RoutesBuilder;
+import org.apache.camel.*;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
-import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.component.seda.SedaEndpoint;
 import org.apache.camel.reifier.RouteReifier;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,21 +19,27 @@ import org.mockito.Mock;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static com.rtt.collector.collectorpoc.camel.utils.Constants.KEY_RTTOOL_CAMPAIGN_ID;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class MarkCampaignAsBotErrorRouteTest extends CamelTestSupport {
+public class ChunkCampaignRouteTest extends CamelTestSupport {
 
-    @EndpointInject("mock:direct:notifyCampaignMarkedAsBotError")
-    protected MockEndpoint notifyCampaignMarkedAsBotErrorEndPoint;
+    @EndpointInject("seda:triggerCampaign")
+    protected SedaEndpoint triggerCampaignSedaEndpoint;
 
-    @Produce("direct:markCampaignAsBotError")
-    protected ProducerTemplate markCampaignAsBotErrorEndpoint;
+    @Produce("direct:chunkCampaign")
+    protected ProducerTemplate chunkCampaignEndpoint;
+
+    @InjectMocks
+    private ChunkCampaignUseCase chunkCampaignUseCase;
 
     @InjectMocks
     private UpdateCampaignStatusUseCase updateCampaignStatusUseCase;
@@ -44,16 +49,15 @@ public class MarkCampaignAsBotErrorRouteTest extends CamelTestSupport {
 
     @Override
     protected RoutesBuilder createRouteBuilder() {
-        return new MarkCampaignAsBotErrorRoute(updateCampaignStatusUseCase);
+        return new ChunkCampaignRoute(chunkCampaignUseCase, updateCampaignStatusUseCase);
     }
 
     @BeforeEach
     void mockAllEndPoints() throws Exception {
-        notifyCampaignMarkedAsBotErrorEndPoint.reset();
         RouteReifier.adviceWith(context.getRouteDefinitions().get(0), context, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
-                mockEndpointsAndSkip("direct:notifyCampaignMarkedAsBotError");
+                mockEndpointsAndSkip( "direct:chunkCampaignError");
             }
         });
     }
@@ -61,24 +65,26 @@ public class MarkCampaignAsBotErrorRouteTest extends CamelTestSupport {
     @Test
     void testAgainstSuccess() throws Exception {
         // Given
-        long campaignId = new Random().nextInt();
-        RTToolCampaign campaign = new RTToolCampaign() {{
+        Random random = new Random();
+        long campaignId = random.nextInt();
+        RTToolCampaign campaignAfterUpdate = new RTToolCampaign() {{
             setId(campaignId);
             setStatus(Status.ACTIVE);
         }};
-        RTToolCampaign campaignAfterUpdate = new RTToolCampaign() {{
-            setId(campaignId);
-            setStatus(Status.BOT_ERROR);
+        long chunksCount = 1 + random.nextInt(10);
+        List<BotHubCampaign> chunkedBotHubCampaigns = new ArrayList<BotHubCampaign>() {{
+            for (int i = 0; i < chunksCount; i++) {
+                add(new BotHubCampaign());
+            }
         }};
 
         // When
         when(rtToolCampaignService.updateCampaignStatus(anyLong(), any())).thenReturn(campaignAfterUpdate);
-        markCampaignAsBotErrorEndpoint.sendBodyAndHeader(campaign, KEY_RTTOOL_CAMPAIGN_ID, campaignId);
+        when(rtToolCampaignService.chunkCampaign(anyLong(), anyInt())).thenReturn(chunkedBotHubCampaigns);
+        chunkCampaignEndpoint.sendBodyAndHeader(true, KEY_RTTOOL_CAMPAIGN_ID, campaignId);
 
         // Then
-        notifyCampaignMarkedAsBotErrorEndPoint.expectedBodiesReceived(campaignAfterUpdate);
-        notifyCampaignMarkedAsBotErrorEndPoint.expectedMessageCount(1);
-        notifyCampaignMarkedAsBotErrorEndPoint.expectedHeaderReceived(KEY_RTTOOL_CAMPAIGN_ID, campaignId);
+        assertEquals(chunkedBotHubCampaigns.size(), triggerCampaignSedaEndpoint.getCurrentQueueSize());
 
         assertMockEndpointsSatisfied();
     }

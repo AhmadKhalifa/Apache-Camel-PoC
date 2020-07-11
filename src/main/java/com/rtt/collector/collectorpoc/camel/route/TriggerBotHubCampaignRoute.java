@@ -23,6 +23,6 @@ public class TriggerBotHubCampaignRoute extends RouteBuilder {
                 .to("direct:notifyBotHubCampaignTriggered");
 
         from("direct:notifyBotHubCampaignTriggered")
-                .log("{body}");
+                .log("Campaign triggered: ${body}");
     }
 }

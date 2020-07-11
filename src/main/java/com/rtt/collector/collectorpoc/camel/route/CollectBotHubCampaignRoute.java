@@ -25,6 +25,6 @@ public class CollectBotHubCampaignRoute extends RouteBuilder {
                 .to("direct:notifyBotHubCampaignCollected");
 
         from("direct:notifyBotHubCampaignCollected")
-                .log("{body}");
+                .log("Campaign collected: ${body}");
     }
 }

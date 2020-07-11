@@ -1,4 +1,4 @@
-package com.rtt.collector.collectorpoc.routes;
+package com.rtt.collector.collectorpoc.unit.routes;
 
 import com.rtt.collector.collectorpoc.camel.route.GetActiveBotHubCampaignsRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;

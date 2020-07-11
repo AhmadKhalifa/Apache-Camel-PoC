@@ -1,9 +1,9 @@
-package com.rtt.collector.collectorpoc.routes;
+package com.rtt.collector.collectorpoc.unit.routes;
 
-import com.rtt.collector.collectorpoc.camel.route.TriggerBotHubCampaignRoute;
+import com.rtt.collector.collectorpoc.camel.route.CollectBotHubCampaignRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
 import com.rtt.collector.collectorpoc.campaign.combo.service.BotHubCampaignService;
-import com.rtt.collector.collectorpoc.campaign.combo.usecase.TriggerBotHubCampaignUseCase;
+import com.rtt.collector.collectorpoc.campaign.combo.usecase.CollectBotHubCampaignResultsUseCase;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -21,24 +21,25 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Properties;
+import java.util.Random;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class TriggerBotHubCampaignRouteTest extends CamelTestSupport {
+public class CollectBotHubCampaignRouteTest extends CamelTestSupport {
 
     private static final int THREAD_POOL = 1;
 
-    @EndpointInject("mock:direct:notifyBotHubCampaignTriggered")
-    protected MockEndpoint notifyBotHubCampaignTriggeredEndPoint;
+    @EndpointInject("mock:direct:notifyBotHubCampaignCollected")
+    protected MockEndpoint notifyBotHubCampaignCollectedEndPoint;
 
-    @Produce("seda:triggerCampaign")
-    protected ProducerTemplate triggerBotHubCampaignEndpoint;
+    @Produce("seda:collectBotHubCampaign")
+    protected ProducerTemplate collectBotHubCampaignEndpoint;
 
     @InjectMocks
-    private TriggerBotHubCampaignUseCase triggerBotHubCampaignUseCase;
+    private CollectBotHubCampaignResultsUseCase collectBotHubCampaignResultsUseCase;
 
     @Mock
     private BotHubCampaignService botHubCampaignService;
@@ -46,22 +47,22 @@ public class TriggerBotHubCampaignRouteTest extends CamelTestSupport {
     @Override
     protected Properties useOverridePropertiesWithPropertiesComponent() {
         return new Properties() {{
-            put("scheduler-routes.bothub-trigger.thread-pool", THREAD_POOL);
+            put("scheduler-routes.bothub-collector.thread-pool", THREAD_POOL);
         }};
     }
 
     @Override
     protected RoutesBuilder createRouteBuilder() {
-        return new TriggerBotHubCampaignRoute(triggerBotHubCampaignUseCase);
+        return new CollectBotHubCampaignRoute(collectBotHubCampaignResultsUseCase);
     }
 
     @BeforeEach
     void mockAllEndPoints() throws Exception {
-        notifyBotHubCampaignTriggeredEndPoint.reset();
+        notifyBotHubCampaignCollectedEndPoint.reset();
         RouteReifier.adviceWith(context.getRouteDefinitions().get(0), context, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
-                mockEndpointsAndSkip("direct:notifyBotHubCampaignTriggered");
+                mockEndpointsAndSkip("direct:notifyBotHubCampaignCollected");
             }
         });
     }
@@ -69,15 +70,18 @@ public class TriggerBotHubCampaignRouteTest extends CamelTestSupport {
     @Test
     void testAgainstSuccess() throws Exception {
         // Given
-        BotHubCampaign botHubCampaign = new BotHubCampaign();
+        long botHubCampaignId = new Random().nextInt();
+        BotHubCampaign botHubCampaign = new BotHubCampaign() {{
+            setId(botHubCampaignId);
+        }};
 
         // When
-        when(botHubCampaignService.triggerCampaign(any())).thenReturn(botHubCampaign);
-        triggerBotHubCampaignEndpoint.sendBody(botHubCampaign);
+        when(botHubCampaignService.collectCampaignResults(anyLong())).thenReturn(botHubCampaign);
+        collectBotHubCampaignEndpoint.sendBody(botHubCampaign);
 
         // Then
-        notifyBotHubCampaignTriggeredEndPoint.expectedBodiesReceived(botHubCampaign);
-        notifyBotHubCampaignTriggeredEndPoint.expectedMessageCount(1);
+        notifyBotHubCampaignCollectedEndPoint.expectedBodiesReceived(botHubCampaign);
+        notifyBotHubCampaignCollectedEndPoint.expectedMessageCount(1);
 
         assertMockEndpointsSatisfied();
     }
