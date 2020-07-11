@@ -1,20 +1,16 @@
 package com.rtt.collector.collectorpoc.unit.routes;
 
+import com.rtt.collector.collectorpoc.base.BaseCamelRouteUnitTestSuite;
 import com.rtt.collector.collectorpoc.camel.route.GetActiveBotHubCampaignsRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.GetActiveBotHubCampaignsUseCase;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.RoutesBuilder;
 import org.apache.camel.component.seda.SedaEndpoint;
-import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +18,10 @@ import java.util.Random;
 
 import static com.rtt.collector.collectorpoc.camel.utils.Constants.KEY_RTTOOL_CAMPAIGN_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class GetActiveBotHubCampaignsRouteTest extends CamelTestSupport {
+public class GetActiveBotHubCampaignsRouteTest extends BaseCamelRouteUnitTestSuite<GetActiveBotHubCampaignsRoute> {
 
     @EndpointInject("seda:collectBotHubCampaign")
     protected SedaEndpoint collectBotHubCampaignSedaEndpoint;
@@ -42,12 +36,17 @@ public class GetActiveBotHubCampaignsRouteTest extends CamelTestSupport {
     private GetActiveBotHubCampaignsUseCase getActiveBotHubCampaignsUseCase;
 
     @Override
-    protected RoutesBuilder createRouteBuilder() {
+    protected GetActiveBotHubCampaignsRoute getRoute() {
         return getActiveBotHubCampaignsRoute;
     }
 
+    @Override
+    protected String[] getEndpointsToMock() {
+        return new String[0];
+    }
+
     @Test
-    void testAgainstSuccess() throws Exception {
+    void testAgainstSuccess() {
         // Given
         Random random = new Random();
         long campaignId = random.nextInt();
@@ -64,7 +63,5 @@ public class GetActiveBotHubCampaignsRouteTest extends CamelTestSupport {
 
         // Then
         assertEquals(chunkedBotHubCampaigns.size(), collectBotHubCampaignSedaEndpoint.getCurrentQueueSize());
-
-        assertMockEndpointsSatisfied();
     }
 }

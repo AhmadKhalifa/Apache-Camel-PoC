@@ -1,23 +1,16 @@
 package com.rtt.collector.collectorpoc.unit.routes;
 
+import com.rtt.collector.collectorpoc.base.BaseCamelRouteUnitTestSuite;
 import com.rtt.collector.collectorpoc.camel.route.CollectBotHubCampaignRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
 import com.rtt.collector.collectorpoc.campaign.combo.usecase.CollectBotHubCampaignResultsUseCase;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.RoutesBuilder;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.reifier.RouteReifier;
-import org.apache.camel.test.junit5.CamelTestSupport;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Properties;
 import java.util.Random;
@@ -25,9 +18,7 @@ import java.util.Random;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class CollectBotHubCampaignRouteTest extends CamelTestSupport {
+public class CollectBotHubCampaignRouteTest extends BaseCamelRouteUnitTestSuite<CollectBotHubCampaignRoute> {
 
     private static final int THREAD_POOL = 1;
 
@@ -51,19 +42,13 @@ public class CollectBotHubCampaignRouteTest extends CamelTestSupport {
     }
 
     @Override
-    protected RoutesBuilder createRouteBuilder() {
+    protected CollectBotHubCampaignRoute getRoute() {
         return collectBotHubCampaignRoute;
     }
 
-    @BeforeEach
-    void mockAllEndPoints() throws Exception {
-        notifyBotHubCampaignCollectedEndPoint.reset();
-        RouteReifier.adviceWith(context.getRouteDefinitions().get(0), context, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                mockEndpointsAndSkip("direct:notifyBotHubCampaignCollected");
-            }
-        });
+    @Override
+    protected String[] getEndpointsToMock() {
+        return new String[]{"direct:notifyBotHubCampaignCollected"};
     }
 
     @Test
