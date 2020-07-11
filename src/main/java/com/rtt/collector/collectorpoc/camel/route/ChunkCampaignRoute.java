@@ -1,15 +1,17 @@
 package com.rtt.collector.collectorpoc.camel.route;
 
 import com.rtt.collector.collectorpoc.annotation.Route;
+import com.rtt.collector.collectorpoc.base.BaseRoute;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.ChunkCampaignUseCase;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.UpdateCampaignStatusUseCase;
-import org.apache.camel.builder.RouteBuilder;
 
 import static com.rtt.collector.collectorpoc.camel.utils.Constants.KEY_RTTOOL_CAMPAIGN_ID;
 
 @Route
-public class ChunkCampaignRoute extends RouteBuilder {
+public class ChunkCampaignRoute extends BaseRoute {
+
+    public static final String ROUTE_ID = ChunkCampaignRoute.class.getSimpleName();
 
     private final ChunkCampaignUseCase chunkCampaignUseCase;
     private final UpdateCampaignStatusUseCase updateCampaignStatusUseCase;
@@ -23,8 +25,10 @@ public class ChunkCampaignRoute extends RouteBuilder {
     }
 
     @Override
-    public void configure() {
+    public void configure() throws Exception {
+        super.configure();
         from("direct:chunkCampaign")
+                .routeId(ROUTE_ID)
                 .process(exchange -> exchange.getIn().setBody(updateCampaignStatusUseCase.execute(
                         UpdateCampaignStatusUseCase.Parameters.build(
                                 (long) exchange.getIn().getHeader(KEY_RTTOOL_CAMPAIGN_ID),

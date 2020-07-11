@@ -1,15 +1,17 @@
 package com.rtt.collector.collectorpoc.camel.route;
 
 import com.rtt.collector.collectorpoc.annotation.Route;
+import com.rtt.collector.collectorpoc.base.BaseRoute;
 import com.rtt.collector.collectorpoc.bot.usecase.ValidateBotUseCase;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
-import org.apache.camel.builder.RouteBuilder;
 
 import static com.rtt.collector.collectorpoc.camel.utils.Constants.KET_BOT_HUB_BOT_ID;
 import static com.rtt.collector.collectorpoc.camel.utils.Constants.KEY_RTTOOL_CAMPAIGN_ID;
 
 @Route
-public class CollectRTToolCampaignsRoute extends RouteBuilder {
+public class CollectRTToolCampaignsRoute extends BaseRoute {
+
+    public static final String ROUTE_ID = CollectRTToolCampaignsRoute.class.getSimpleName();
 
     private final ValidateBotUseCase validateBotUseCase;
 
@@ -18,8 +20,10 @@ public class CollectRTToolCampaignsRoute extends RouteBuilder {
     }
 
     @Override
-    public void configure() {
+    public void configure() throws Exception {
+        super.configure();
         from("seda:collectRTToolCampaigns?concurrentConsumers={{scheduler-routes.collector.thread-pool}}")
+                .routeId(ROUTE_ID)
                 .process(exchange -> {
                     RTToolCampaign rtToolCampaign = exchange.getIn().getBody(RTToolCampaign.class);
                     long campaignId = rtToolCampaign.getId();
