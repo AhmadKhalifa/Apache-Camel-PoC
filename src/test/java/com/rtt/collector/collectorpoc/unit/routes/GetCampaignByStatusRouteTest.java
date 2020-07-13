@@ -45,8 +45,8 @@ public class GetCampaignByStatusRouteTest extends BaseCamelRouteUnitTestSuite<Ge
     }
 
     @Override
-    protected String[] getEndpointsToMock() {
-        return new String[0];
+    public RouteMockEndpoints[] getEndpointsToMock() {
+        return new RouteMockEndpoints[0];
     }
 
     @Test

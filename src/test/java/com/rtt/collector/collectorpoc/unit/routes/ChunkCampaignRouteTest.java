@@ -1,14 +1,17 @@
 package com.rtt.collector.collectorpoc.unit.routes;
 
 import com.rtt.collector.collectorpoc.base.BaseCamelRouteUnitTestSuite;
+import com.rtt.collector.collectorpoc.base.BaseRoute;
 import com.rtt.collector.collectorpoc.camel.route.ChunkCampaignRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.ChunkCampaignUseCase;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.UpdateCampaignStatusUseCase;
+import com.rtt.collector.collectorpoc.exception.RTTCampaignNotFoundException;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.component.seda.SedaEndpoint;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -28,6 +31,9 @@ public class ChunkCampaignRouteTest extends BaseCamelRouteUnitTestSuite<ChunkCam
     @EndpointInject("seda:triggerCampaign")
     protected SedaEndpoint triggerCampaignSedaEndpoint;
 
+    @EndpointInject("mock:direct:rttCampaignNotFoundHandler")
+    protected MockEndpoint rttCampaignNotFoundHandlerEndPoint;
+
     @Produce("direct:chunkCampaign")
     protected ProducerTemplate chunkCampaignEndpoint;
 
@@ -46,17 +52,22 @@ public class ChunkCampaignRouteTest extends BaseCamelRouteUnitTestSuite<ChunkCam
     }
 
     @Override
-    protected String[] getEndpointsToMock() {
-        return new String[]{"direct:chunkCampaignError"};
+    public RouteMockEndpoints[] getEndpointsToMock() {
+        return new RouteMockEndpoints[] {
+                new RouteMockEndpoints(
+                        BaseRoute.ROUTE_ID,
+                        "direct:rttCampaignNotFoundHandler"
+                )
+        };
     }
 
     @Test
     void testAgainstSuccess() throws Exception {
         // Given
         Random random = new Random();
-        long campaignId = random.nextInt();
+        long rttoolCampaignId = random.nextInt();
         RTToolCampaign campaignAfterUpdate = new RTToolCampaign() {{
-            setId(campaignId);
+            setId(rttoolCampaignId);
             setStatus(Status.ACTIVE);
         }};
         long chunksCount = 1 + random.nextInt(10);
@@ -69,10 +80,51 @@ public class ChunkCampaignRouteTest extends BaseCamelRouteUnitTestSuite<ChunkCam
         // When
         when(updateCampaignStatusUseCase.execute(any())).thenReturn(campaignAfterUpdate);
         when(chunkCampaignUseCase.execute(any())).thenReturn(chunkedBotHubCampaigns);
-        chunkCampaignEndpoint.sendBodyAndHeader(true, KEY_RTTOOL_CAMPAIGN_ID, campaignId);
+        chunkCampaignEndpoint.sendBodyAndHeader(true, KEY_RTTOOL_CAMPAIGN_ID, rttoolCampaignId);
 
         // Then
         assertEquals(chunkedBotHubCampaigns.size(), triggerCampaignSedaEndpoint.getCurrentQueueSize());
+        rttCampaignNotFoundHandlerEndPoint.expectedMessageCount(0);
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    void testAgainstFailure_CampaignNotFoundWhenTryingToUpdateCampaignStatus() throws Exception {
+        // Given
+        long rttoolCampaignId = new Random().nextInt();
+
+        // When
+        when(updateCampaignStatusUseCase.execute(any()))
+                .thenThrow(new RTTCampaignNotFoundException(rttoolCampaignId));
+        chunkCampaignEndpoint.sendBodyAndHeader(true, KEY_RTTOOL_CAMPAIGN_ID, rttoolCampaignId);
+
+        // Then
+        assertEquals(0, triggerCampaignSedaEndpoint.getCurrentQueueSize());
+        rttCampaignNotFoundHandlerEndPoint.expectedMessageCount(1);
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    void testAgainstFailure_CampaignNotFoundWhenTryingToChunkIt() throws Exception {
+        // Given
+        Random random = new Random();
+        long rttoolCampaignId = random.nextInt();
+        RTToolCampaign campaignAfterUpdate = new RTToolCampaign() {{
+            setId(rttoolCampaignId);
+            setStatus(Status.ACTIVE);
+        }};
+
+        // When
+        when(updateCampaignStatusUseCase.execute(any())).thenReturn(campaignAfterUpdate);
+        when(chunkCampaignUseCase.execute(any()))
+                .thenThrow(new RTTCampaignNotFoundException(rttoolCampaignId));
+        chunkCampaignEndpoint.sendBodyAndHeader(true, KEY_RTTOOL_CAMPAIGN_ID, rttoolCampaignId);
+
+        // Then
+        assertEquals(0, triggerCampaignSedaEndpoint.getCurrentQueueSize());
+        rttCampaignNotFoundHandlerEndPoint.expectedMessageCount(1);
 
         assertMockEndpointsSatisfied();
     }

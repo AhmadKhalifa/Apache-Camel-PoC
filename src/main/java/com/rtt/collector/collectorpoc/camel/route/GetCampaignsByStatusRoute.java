@@ -2,8 +2,8 @@ package com.rtt.collector.collectorpoc.camel.route;
 
 import com.rtt.collector.collectorpoc.annotation.Route;
 import com.rtt.collector.collectorpoc.base.BaseRoute;
+import com.rtt.collector.collectorpoc.camel.predicate.SchedulerTypePredicate;
 import com.rtt.collector.collectorpoc.camel.utils.SchedulerType;
-import com.rtt.collector.collectorpoc.camel.utils.SchedulerTypePredicate;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.GetCampaignsByStatusUseCase;
 
@@ -30,12 +30,12 @@ public class GetCampaignsByStatusRoute extends BaseRoute {
                 )))
                 .split(body())
                 .choice()
-                    .when(new SchedulerTypePredicate(SchedulerType.TRIGGER))
+                    .when(SchedulerTypePredicate.is(SchedulerType.TRIGGER))
                         .to("seda:launchCampaigns")
-                    .when(new SchedulerTypePredicate(SchedulerType.COLLECTOR))
+                    .when(SchedulerTypePredicate.is(SchedulerType.COLLECTOR))
                         .to("seda:collectRTToolCampaigns")
                     .otherwise()
                         .log("Scheduler not supported")
-                .end();
+                .endChoice();
     }
 }

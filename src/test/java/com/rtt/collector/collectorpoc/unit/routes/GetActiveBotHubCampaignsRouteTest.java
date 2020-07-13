@@ -1,12 +1,15 @@
 package com.rtt.collector.collectorpoc.unit.routes;
 
 import com.rtt.collector.collectorpoc.base.BaseCamelRouteUnitTestSuite;
+import com.rtt.collector.collectorpoc.base.BaseRoute;
 import com.rtt.collector.collectorpoc.camel.route.GetActiveBotHubCampaignsRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.usecase.GetActiveBotHubCampaignsUseCase;
+import com.rtt.collector.collectorpoc.exception.RTTCampaignNotFoundException;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.component.seda.SedaEndpoint;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -29,6 +32,9 @@ public class GetActiveBotHubCampaignsRouteTest extends BaseCamelRouteUnitTestSui
     @Produce("direct:getActiveBotHubCampaigns")
     protected ProducerTemplate getActiveBotHubCampaignsEndpoint;
 
+    @EndpointInject("mock:direct:rttCampaignNotFoundHandler")
+    protected MockEndpoint rttCampaignNotFoundHandlerEndPoint;
+
     @InjectMocks
     private GetActiveBotHubCampaignsRoute getActiveBotHubCampaignsRoute;
 
@@ -41,15 +47,20 @@ public class GetActiveBotHubCampaignsRouteTest extends BaseCamelRouteUnitTestSui
     }
 
     @Override
-    protected String[] getEndpointsToMock() {
-        return new String[0];
+    public RouteMockEndpoints[] getEndpointsToMock() {
+        return new RouteMockEndpoints[]{
+                new RouteMockEndpoints(
+                        BaseRoute.ROUTE_ID,
+                        "direct:rttCampaignNotFoundHandler"
+                )
+        };
     }
 
     @Test
     void testAgainstSuccess() {
         // Given
         Random random = new Random();
-        long campaignId = random.nextInt();
+        long rttoolCampaignId = random.nextInt();
         long chunksCount = 1 + random.nextInt(10);
         List<BotHubCampaign> chunkedBotHubCampaigns = new ArrayList<BotHubCampaign>() {{
             for (int i = 0; i < chunksCount; i++) {
@@ -59,9 +70,25 @@ public class GetActiveBotHubCampaignsRouteTest extends BaseCamelRouteUnitTestSui
 
         // When
         when(getActiveBotHubCampaignsUseCase.execute(any())).thenReturn(chunkedBotHubCampaigns);
-        getActiveBotHubCampaignsEndpoint.sendBodyAndHeader(true, KEY_RTTOOL_CAMPAIGN_ID, campaignId);
+        getActiveBotHubCampaignsEndpoint.sendBodyAndHeader(true, KEY_RTTOOL_CAMPAIGN_ID, rttoolCampaignId);
 
         // Then
         assertEquals(chunkedBotHubCampaigns.size(), collectBotHubCampaignSedaEndpoint.getCurrentQueueSize());
+        rttCampaignNotFoundHandlerEndPoint.expectedMessageCount(0);
+    }
+
+    @Test
+    void testAgainstSuccess_CampaignNotFound() {
+        // Given
+        long rttoolCampaignId = new Random().nextInt();
+
+        // When
+        when(getActiveBotHubCampaignsUseCase.execute(any()))
+                .thenThrow(new RTTCampaignNotFoundException(rttoolCampaignId));
+        getActiveBotHubCampaignsEndpoint.sendBodyAndHeader(true, KEY_RTTOOL_CAMPAIGN_ID, rttoolCampaignId);
+
+        // Then
+        assertEquals(0, collectBotHubCampaignSedaEndpoint.getCurrentQueueSize());
+        rttCampaignNotFoundHandlerEndPoint.expectedMessageCount(1);
     }
 }

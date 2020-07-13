@@ -40,7 +40,7 @@ public class CollectorCycleIntegrationTest extends BaseCamelRouteIntegrationTest
     protected ComboClient botHubClient;
 
     @Override
-    protected RouteMockEndpoints[] getEndpointsToMock() {
+    public RouteMockEndpoints[] getEndpointsToMock() {
         return new RouteMockEndpoints[] {
                 new RouteMockEndpoints(
                         CollectBotHubCampaignRoute.ROUTE_ID,

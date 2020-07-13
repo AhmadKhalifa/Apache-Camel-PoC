@@ -12,6 +12,8 @@ import com.rtt.collector.collectorpoc.campaign.rttool.data.RTToolCampaignReposit
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaignEntity;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaignMapper;
+import com.rtt.collector.collectorpoc.exception.BotNotFoundException;
+import com.rtt.collector.collectorpoc.exception.RTTCampaignNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -87,7 +89,7 @@ public class ComboRTToolCampaignService extends BaseService implements RTToolCam
             );
             return rtToolCampaignMapper.toDto(rtToolCampaignEntity);
         } else {
-            throw new RuntimeException(String.format("RTTool campaign #%d not found", campaignId));
+            throw new RTTCampaignNotFoundException(campaignId);
         }
     }
 
@@ -136,7 +138,7 @@ public class ComboRTToolCampaignService extends BaseService implements RTToolCam
             );
             return campaigns;
         } else {
-            throw new RuntimeException(String.format("RTTool campaign #%d not found", campaignId));
+            throw new RTTCampaignNotFoundException(campaignId);
         }
     }
 
@@ -157,7 +159,7 @@ public class ComboRTToolCampaignService extends BaseService implements RTToolCam
             savedCampaignEntity.setMsisdns(new HashSet<>(msisdnEntities));
             return rtToolCampaignMapper.toDto(rtToolCampaignRepository.save(savedCampaignEntity));
         } else {
-            throw new RuntimeException("Bot not found");
+            throw new BotNotFoundException(botId);
         }
     }
 }

@@ -22,3 +22,8 @@ scheduler-routes:
 
   bothub-collector:
     thread-pool: 10
+
+camel:
+  variables:
+    maximum-redeliveries: 3
+    maximum-redelivery-delay: 500

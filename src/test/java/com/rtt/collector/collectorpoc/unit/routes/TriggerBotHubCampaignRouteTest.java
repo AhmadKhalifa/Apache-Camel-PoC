@@ -1,9 +1,11 @@
 package com.rtt.collector.collectorpoc.unit.routes;
 
 import com.rtt.collector.collectorpoc.base.BaseCamelRouteUnitTestSuite;
+import com.rtt.collector.collectorpoc.base.BaseRoute;
 import com.rtt.collector.collectorpoc.camel.route.TriggerBotHubCampaignRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
 import com.rtt.collector.collectorpoc.campaign.combo.usecase.TriggerBotHubCampaignUseCase;
+import com.rtt.collector.collectorpoc.exception.BotHubCampaignNotFoundException;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -13,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import java.util.Properties;
+import java.util.Random;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -23,6 +26,9 @@ public class TriggerBotHubCampaignRouteTest extends BaseCamelRouteUnitTestSuite<
 
     @EndpointInject("mock:direct:notifyBotHubCampaignTriggered")
     protected MockEndpoint notifyBotHubCampaignTriggeredEndPoint;
+
+    @EndpointInject("mock:direct:botHubCampaignNotFoundHandler")
+    protected MockEndpoint botHubCampaignNotFoundHandlerEndPoint;
 
     @Produce("seda:triggerCampaign")
     protected ProducerTemplate triggerBotHubCampaignEndpoint;
@@ -46,8 +52,17 @@ public class TriggerBotHubCampaignRouteTest extends BaseCamelRouteUnitTestSuite<
     }
 
     @Override
-    protected String[] getEndpointsToMock() {
-        return new String[]{"direct:notifyBotHubCampaignTriggered"};
+    public RouteMockEndpoints[] getEndpointsToMock() {
+        return new RouteMockEndpoints[]{
+                new RouteMockEndpoints(
+                        TriggerBotHubCampaignRoute.ROUTE_ID,
+                        "direct:notifyBotHubCampaignTriggered"
+                ),
+                new RouteMockEndpoints(
+                        BaseRoute.ROUTE_ID,
+                        "direct:botHubCampaignNotFoundHandler"
+                )
+        };
     }
 
     @Test
@@ -62,6 +77,27 @@ public class TriggerBotHubCampaignRouteTest extends BaseCamelRouteUnitTestSuite<
         // Then
         notifyBotHubCampaignTriggeredEndPoint.expectedBodiesReceived(botHubCampaign);
         notifyBotHubCampaignTriggeredEndPoint.expectedMessageCount(1);
+        botHubCampaignNotFoundHandlerEndPoint.expectedMessageCount(0);
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    void testAgainstFailure_BotHubCampaignNotFound() throws Exception {
+        // Given
+        long botHubCampaignId = new Random().nextInt();
+        BotHubCampaign botHubCampaign = new BotHubCampaign() {{
+            setId(botHubCampaignId);
+        }};
+
+        // When
+        when(triggerBotHubCampaignUseCase.execute(any()))
+                .thenThrow(new BotHubCampaignNotFoundException(botHubCampaignId));
+        triggerBotHubCampaignEndpoint.sendBody(botHubCampaign);
+
+        // Then
+        notifyBotHubCampaignTriggeredEndPoint.expectedMessageCount(0);
+        botHubCampaignNotFoundHandlerEndPoint.expectedMessageCount(1);
 
         assertMockEndpointsSatisfied();
     }

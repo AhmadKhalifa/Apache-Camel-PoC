@@ -6,6 +6,7 @@ import com.rtt.collector.collectorpoc.bot.model.Bot;
 import com.rtt.collector.collectorpoc.bot.model.BotEntity;
 import com.rtt.collector.collectorpoc.bot.model.BotMapper;
 import com.rtt.collector.collectorpoc.client.bothub.BotHubClient;
+import com.rtt.collector.collectorpoc.exception.BotNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +38,7 @@ public class ComboBotService extends BaseService implements BotService {
             BotEntity botEntity = botEntityOptional.get();
             return botMapper.toDto(botEntity);
         } else {
-            throw new RuntimeException(String.format("Bot #%d not found", botId));
+            throw new BotNotFoundException(botId);
         }
     }
 

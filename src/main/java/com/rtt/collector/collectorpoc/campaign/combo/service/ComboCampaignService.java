@@ -9,6 +9,8 @@ import com.rtt.collector.collectorpoc.campaign.rttool.data.RTToolCampaignReposit
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaignEntity;
 import com.rtt.collector.collectorpoc.client.bothub.BotHubClient;
+import com.rtt.collector.collectorpoc.exception.BotHubCampaignNotFoundException;
+import com.rtt.collector.collectorpoc.exception.RTTCampaignNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -67,7 +69,7 @@ public class ComboCampaignService extends BaseService implements BotHubCampaignS
             );
             return botHubCampaignMapper.toDto(botHubCampaignEntity);
         } else {
-            throw new RuntimeException(String.format("Bot hub campaign #%d not found", botHubCampaign.getId()));
+            throw new BotHubCampaignNotFoundException(botHubCampaign.getId());
         }
     }
 
@@ -102,7 +104,7 @@ public class ComboCampaignService extends BaseService implements BotHubCampaignS
             );
             return botHubCampaign;
         } else {
-            throw new RuntimeException(String.format("Bot hub campaign #%d not found", botHubCampaignId));
+            throw new BotHubCampaignNotFoundException(botHubCampaignId);
         }
     }
 
@@ -144,7 +146,7 @@ public class ComboCampaignService extends BaseService implements BotHubCampaignS
             }
             return activeBotHubCampaigns;
         } else {
-            throw new RuntimeException(String.format("Campaign #%d not found", rtToolCampaignId));
+            throw new RTTCampaignNotFoundException(rtToolCampaignId);
         }
     }
 }

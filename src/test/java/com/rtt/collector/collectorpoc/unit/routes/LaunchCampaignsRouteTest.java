@@ -51,8 +51,14 @@ public class LaunchCampaignsRouteTest extends BaseCamelRouteUnitTestSuite<Launch
     }
 
     @Override
-    protected String[] getEndpointsToMock() {
-        return new String[]{"direct:chunkCampaign", "direct:markCampaignAsBotError"};
+    public RouteMockEndpoints[] getEndpointsToMock() {
+        return new RouteMockEndpoints[]{
+                new RouteMockEndpoints(
+                        LaunchCampaignsRoute.ROUTE_ID,
+                        "direct:chunkCampaign",
+                        "direct:markCampaignAsBotError"
+                )
+        };
     }
 
     @Test

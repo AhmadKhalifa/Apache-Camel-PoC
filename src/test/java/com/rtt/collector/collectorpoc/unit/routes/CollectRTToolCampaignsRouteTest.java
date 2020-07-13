@@ -17,7 +17,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 
-import static com.rtt.collector.collectorpoc.camel.utils.Constants.KET_BOT_HUB_BOT_ID;
+import static com.rtt.collector.collectorpoc.camel.utils.Constants.KEY_BOT_HUB_BOT_ID;
 import static com.rtt.collector.collectorpoc.camel.utils.Constants.KEY_RTTOOL_CAMPAIGN_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -54,8 +54,14 @@ public class CollectRTToolCampaignsRouteTest extends BaseCamelRouteUnitTestSuite
     }
 
     @Override
-    protected String[] getEndpointsToMock() {
-        return new String[]{"direct:getActiveBotHubCampaigns", "direct:markCampaignAsBotError"};
+    public RouteMockEndpoints[] getEndpointsToMock() {
+        return new RouteMockEndpoints[]{
+                new RouteMockEndpoints(
+                        CollectRTToolCampaignsRoute.ROUTE_ID,
+                        "direct:getActiveBotHubCampaigns",
+                        "direct:markCampaignAsBotError"
+                )
+        };
     }
 
     @Test
@@ -78,7 +84,7 @@ public class CollectRTToolCampaignsRouteTest extends BaseCamelRouteUnitTestSuite
         getActiveBotHubCampaignsEndpoint.expectedBodiesReceived(true);
         getActiveBotHubCampaignsEndpoint.expectedMessageCount(1);
         getActiveBotHubCampaignsEndpoint.expectedHeaderReceived(KEY_RTTOOL_CAMPAIGN_ID, campaignId);
-        getActiveBotHubCampaignsEndpoint.expectedHeaderReceived(KET_BOT_HUB_BOT_ID, botHubBotId);
+        getActiveBotHubCampaignsEndpoint.expectedHeaderReceived(KEY_BOT_HUB_BOT_ID, botHubBotId);
 
         markCampaignAsBotErrorEndpoint.expectedMessageCount(0);
 
@@ -107,7 +113,7 @@ public class CollectRTToolCampaignsRouteTest extends BaseCamelRouteUnitTestSuite
         markCampaignAsBotErrorEndpoint.expectedBodiesReceived(false);
         markCampaignAsBotErrorEndpoint.expectedMessageCount(1);
         markCampaignAsBotErrorEndpoint.expectedHeaderReceived(KEY_RTTOOL_CAMPAIGN_ID, campaignId);
-        markCampaignAsBotErrorEndpoint.expectedHeaderReceived(KET_BOT_HUB_BOT_ID, botHubBotId);
+        markCampaignAsBotErrorEndpoint.expectedHeaderReceived(KEY_BOT_HUB_BOT_ID, botHubBotId);
 
         assertMockEndpointsSatisfied();
     }

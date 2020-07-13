@@ -7,7 +7,7 @@ import com.rtt.collector.collectorpoc.camel.route.TriggerBotHubCampaignRoute;
 import com.rtt.collector.collectorpoc.camel.utils.SchedulerType;
 import com.rtt.collector.collectorpoc.campaign.rttool.model.RTToolCampaign;
 import com.rtt.collector.collectorpoc.client.bothub.BotHubClient;
-import org.apache.camel.*;
+import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +34,7 @@ public class TriggerCycleIntegrationTest extends BaseCamelRouteIntegrationTestSu
     protected BotHubClient botHubClient;
 
     @Override
-    protected RouteMockEndpoints[] getEndpointsToMock() {
+    public RouteMockEndpoints[] getEndpointsToMock() {
         return new RouteMockEndpoints[] {
                 new RouteMockEndpoints(
                         TriggerBotHubCampaignRoute.ROUTE_ID,

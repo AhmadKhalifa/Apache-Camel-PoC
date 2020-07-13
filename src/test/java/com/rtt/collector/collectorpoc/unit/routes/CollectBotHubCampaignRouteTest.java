@@ -1,9 +1,11 @@
 package com.rtt.collector.collectorpoc.unit.routes;
 
 import com.rtt.collector.collectorpoc.base.BaseCamelRouteUnitTestSuite;
+import com.rtt.collector.collectorpoc.base.BaseRoute;
 import com.rtt.collector.collectorpoc.camel.route.CollectBotHubCampaignRoute;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
 import com.rtt.collector.collectorpoc.campaign.combo.usecase.CollectBotHubCampaignResultsUseCase;
+import com.rtt.collector.collectorpoc.exception.BotHubCampaignNotFoundException;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -24,6 +26,9 @@ public class CollectBotHubCampaignRouteTest extends BaseCamelRouteUnitTestSuite<
 
     @EndpointInject("mock:direct:notifyBotHubCampaignCollected")
     protected MockEndpoint notifyBotHubCampaignCollectedEndPoint;
+
+    @EndpointInject("mock:direct:botHubCampaignNotFoundHandler")
+    protected MockEndpoint botHubCampaignNotFoundHandlerEndPoint;
 
     @Produce("seda:collectBotHubCampaign")
     protected ProducerTemplate collectBotHubCampaignEndpoint;
@@ -47,8 +52,17 @@ public class CollectBotHubCampaignRouteTest extends BaseCamelRouteUnitTestSuite<
     }
 
     @Override
-    protected String[] getEndpointsToMock() {
-        return new String[]{"direct:notifyBotHubCampaignCollected"};
+    public RouteMockEndpoints[] getEndpointsToMock() {
+        return new RouteMockEndpoints[] {
+                new RouteMockEndpoints(
+                        CollectBotHubCampaignRoute.ROUTE_ID,
+                        "direct:notifyBotHubCampaignCollected"
+                ),
+                new RouteMockEndpoints(
+                        BaseRoute.ROUTE_ID,
+                        "direct:botHubCampaignNotFoundHandler"
+                )
+        };
     }
 
     @Test
@@ -66,6 +80,27 @@ public class CollectBotHubCampaignRouteTest extends BaseCamelRouteUnitTestSuite<
         // Then
         notifyBotHubCampaignCollectedEndPoint.expectedBodiesReceived(botHubCampaign);
         notifyBotHubCampaignCollectedEndPoint.expectedMessageCount(1);
+        botHubCampaignNotFoundHandlerEndPoint.expectedMessageCount(0);
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    void testAgainstFailure_BotHubCampaignNotFound() throws Exception {
+        // Given
+        long botHubCampaignId = new Random().nextInt();
+        BotHubCampaign botHubCampaign = new BotHubCampaign() {{
+            setId(botHubCampaignId);
+        }};
+
+        // When
+        when(collectBotHubCampaignResultsUseCase.execute(any()))
+                .thenThrow(new BotHubCampaignNotFoundException(botHubCampaignId));
+        collectBotHubCampaignEndpoint.sendBody(botHubCampaign);
+
+        // Then
+        notifyBotHubCampaignCollectedEndPoint.expectedMessageCount(0);
+        botHubCampaignNotFoundHandlerEndPoint.expectedMessageCount(1);
 
         assertMockEndpointsSatisfied();
     }

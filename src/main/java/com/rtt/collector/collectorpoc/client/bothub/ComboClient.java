@@ -3,6 +3,7 @@ package com.rtt.collector.collectorpoc.client.bothub;
 import com.rtt.collector.collectorpoc.annotation.Client;
 import com.rtt.collector.collectorpoc.base.BaseHttpClient;
 import com.rtt.collector.collectorpoc.campaign.combo.model.BotHubCampaign;
+import com.rtt.collector.collectorpoc.exception.BotHubCampaignNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -35,7 +36,7 @@ public class ComboClient extends BaseHttpClient implements BotHubClient {
         BotHubCampaign botHubCampaign = triggeredCampaigns.stream()
                 .filter(campaign -> botHubCampaignId.equals(campaign.getBotHubId()))
                 .findFirst()
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> new BotHubCampaignNotFoundException(botHubCampaignId));
         Random random = new Random();
         if (isActive(botHubCampaign)) {
             botHubCampaign.setSentCount(

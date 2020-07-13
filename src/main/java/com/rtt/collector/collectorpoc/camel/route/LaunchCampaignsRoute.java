@@ -36,6 +36,6 @@ public class LaunchCampaignsRoute extends BaseRoute {
                     .to("direct:chunkCampaign")
                 .otherwise()
                     .to("direct:markCampaignAsBotError")
-                .end();
+                .endChoice();
     }
 }
