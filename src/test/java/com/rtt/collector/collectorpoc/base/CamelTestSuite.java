@@ -35,9 +35,9 @@ public interface CamelTestSuite {
                     @Override
                     public void configure() throws Exception {
                         if (skipOriginalEndpoints()) {
-                            mockEndpoints(endpoints);
-                        } else {
                             mockEndpointsAndSkip(endpoints);
+                        } else {
+                            mockEndpoints(endpoints);
                         }
                     }
                 }
